@@ -1,29 +1,33 @@
 package SpamBot;
 
+import bots.JDAAddon.CJDA;
+import bots.JDAAddon.CJDABuilder;
+import bots.JDAAddon.Input;
 import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
+
 import javax.security.auth.login.LoginException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
-import static bots.JDAAddon.CJDABuilder.*;
+
+import static bots.JDAAddon.CJDABuilder.getToken;
 
 public class Main {
 
-	private JDA Bot;
+	private CJDA Bot;
 	private Scanner input = new Scanner(System.in);
 
-	Main(){
+	private Main(){
 
 		String token = getToken();
 
 
-		if (Bot == null){
+		while (Bot == null){
 			try {
-				Bot = new JDABuilder(AccountType.CLIENT).setToken(token).buildBlocking();
+				Bot = new CJDABuilder(AccountType.CLIENT).addMessageHandlers(System.out::println).setToken(token).buildBlocking();
 				Bot.setAutoReconnect(true);
 
 			}catch(LoginException | InterruptedException | RateLimitedException e){
@@ -31,7 +35,17 @@ public class Main {
 			}
 		}
 
-		TextChannel spam = selector(selector(Bot.getGuilds()).getTextChannels());
+
+		Input BotIn = Bot.getInput();
+		BotIn.send("/channels");
+		BotIn.send(input.nextLine());
+		BotIn.send(input.nextLine());
+
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException ignored) {}
+
+		MessageChannel spam = BotIn.getSelectedChannel();
 
 		System.out.println("\n\ninput message");
 		String inputStr;
@@ -48,6 +62,7 @@ public class Main {
 			msg.append(inputStr + "\n");
 		}
 
+		//noinspection InfiniteLoopStatement
 		while(true){
 
 			spam.sendMessage(msg.toString()).queue();
@@ -56,30 +71,6 @@ public class Main {
 			} catch (InterruptedException ignored) {}
 		}
 
-	}
-
-	private <T> T selector(List<T> list){
-		while(true) {
-			T selected;
-
-			for (int i = 0; i < list.size(); i++) {
-				System.out.println(i + ": " + list.get(i));
-			}
-
-			try{
-				selected = list.get(input.nextInt());
-
-			}catch (InputMismatchException e){
-				System.err.println("please put in Integer");
-				continue;
-
-			}catch (IndexOutOfBoundsException e){
-				System.err.println("please put in valid index");
-				continue;
-			}
-
-			return selected;
-		}
 	}
 
 	public static void main(String args[]){
