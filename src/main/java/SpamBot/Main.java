@@ -65,7 +65,7 @@ public class Main {
 		//noinspection InfiniteLoopStatement
 		while(true){
 
-			spam.sendMessage(msg.toString()).queue();
+			spam.sendMessage().queue();
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException ignored) {}
